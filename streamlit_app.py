@@ -2,13 +2,13 @@ import streamlit as st
 import re
 
 st.set_page_config(
-    page_title="Scam Detejjjjctor",
+    page_title="Scam Detector",
     layout="centered"
 )
 
 st.title("Scam Detector")
 st.write(
-    "Got a message that feels a little off? Paste it here and "
+    "Gottt a message that feels a little off? Paste it here and "
     "we'll check it for common scam warning signs. Because apparently "
     "we have to be suspicious of everything now."
 )
