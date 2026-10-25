@@ -252,9 +252,9 @@ if st.button("Check this message", type="primary"):
     else:
         found_categories = find_warning_categories(message)
 
-        unexpected_message = expected == "No"
-        sensitive_request = asks_sensitive == "Yes"
-        pressure_reported = pressured == "Yes"
+        unexpected_message = expected == "Definitely not"
+        sensitive_request = asks_sensitive == "Yeah"
+        pressure_reported = pressured == "Yeah"
 
         score = calculate_risk_score(
             found_categories,
