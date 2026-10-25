@@ -2,7 +2,7 @@ import streamlit as st
 import re
 
 st.set_page_config(
-    page_title="Scam Detector",
+    page_title="Scam Detejjjjctor",
     layout="centered"
 )
 
