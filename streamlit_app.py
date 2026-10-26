@@ -1,4 +1,3 @@
-
 import re
 from urllib.parse import urlparse
 
@@ -806,7 +805,7 @@ with tab_about:
         unsafe_allow_html=True
     )
     st.markdown(
-        '<div class="section-subtitle">Here's what the app checks, '
+        "<div class='section-subtitle'>Here's what the app checks, "
         'what the score means, and where its limits are.</div>',
         unsafe_allow_html=True
     )
