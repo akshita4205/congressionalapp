@@ -1,9 +1,11 @@
 import re
+from urllib.parse import urlparse
+
 import streamlit as st
 
 st.set_page_config(
     page_title="Scam Detector",
-    page_icon="🔎",
+    page_icon="SD",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -12,80 +14,38 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-:root {
-    --bg: #0b1120;
-    --panel: #121c30;
-    --panel-light: #18253b;
-    --teal: #42e8c5;
-    --text: #edf3ff;
-    --muted: #9aabc5;
-}
-
 .stApp {
-    background:
-        radial-gradient(ellipse at 10% 0%, #142b3c 0%, transparent 40%),
-        linear-gradient(180deg, #0b1120 0%, #0d1424 100%);
-    color: var(--text);
+    background: radial-gradient(ellipse at 10% 0%, #142b3c 0%, transparent 40%),
+                linear-gradient(180deg, #0b1120 0%, #0d1424 100%);
+    color: #edf3ff;
     font-family: 'DM Sans', sans-serif;
 }
 
-[data-testid="stHeader"] {
-    background: transparent;
-}
-
-[data-testid="stToolbar"] {
-    right: 1rem;
-}
+[data-testid="stHeader"] { background: transparent; }
 
 .block-container {
     max-width: 1050px;
-    padding-top: 2.5rem;
+    padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
 h1, h2, h3, h4 {
     font-family: 'Space Grotesk', sans-serif !important;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.4px;
 }
 
-h1 {
-    color: #f4f7ff !important;
-    font-size: 2.7rem !important;
-    font-weight: 700 !important;
-}
+h1 { color: #f4f7ff !important; }
 
-h2, h3 {
-    color: #f0f5ff !important;
-}
+p, label, li { color: #d4deef; }
 
-p, label, li {
-    color: #d4deef;
-}
-
-small, [data-testid="stCaptionContainer"] {
-    color: var(--muted) !important;
-}
+[data-testid="stCaptionContainer"] { color: #9aabc5 !important; }
 
 .hero {
-    background: linear-gradient(135deg, #14283a 0%, #132039 60%, #19233b 100%);
+    background: linear-gradient(135deg, #14283a, #132039 60%, #19233b);
     border: 1px solid #294459;
     border-radius: 22px;
     padding: 30px 32px;
     margin-bottom: 26px;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero:after {
-    content: "";
-    position: absolute;
-    width: 190px;
-    height: 190px;
-    border-radius: 50%;
-    background: #42e8c5;
-    opacity: 0.06;
-    right: -40px;
-    top: -65px;
 }
 
 .eyebrow {
@@ -108,9 +68,9 @@ small, [data-testid="stCaptionContainer"] {
 
 .hero-description {
     color: #b8c8df;
-    font-size: 1.02rem;
+    font-size: 1rem;
     line-height: 1.7;
-    max-width: 650px;
+    max-width: 680px;
     margin-bottom: 18px;
 }
 
@@ -166,10 +126,6 @@ div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
     color: #55ebcb;
 }
 
-div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
-    background: #42e8c5;
-}
-
 div[data-testid="stTextArea"] textarea {
     background: #101a2b;
     color: #f0f5ff;
@@ -182,10 +138,6 @@ div[data-testid="stTextArea"] textarea {
 div[data-testid="stTextArea"] textarea:focus {
     border-color: #42e8c5;
     box-shadow: 0 0 0 1px #42e8c5;
-}
-
-div[data-testid="stRadio"] label {
-    color: #d5dfef;
 }
 
 div.stButton > button {
@@ -206,10 +158,6 @@ div.stButton > button:hover {
     transform: translateY(-1px);
 }
 
-div.stButton > button:focus {
-    box-shadow: 0 0 0 2px #0b1120, 0 0 0 4px #42e8c5;
-}
-
 div[data-testid="stMetric"] {
     background: #121e31;
     border: 1px solid #2a3b54;
@@ -217,27 +165,11 @@ div[data-testid="stMetric"] {
     border-radius: 15px;
 }
 
-div[data-testid="stMetricLabel"] {
-    color: #a8b8d0;
-}
+div[data-testid="stMetricLabel"] { color: #a8b8d0; }
 
 div[data-testid="stMetricValue"] {
     color: #55ebcb;
     font-family: 'Space Grotesk', sans-serif;
-}
-
-div[data-testid="stProgressBar"] > div {
-    background: #24334a;
-    border-radius: 20px;
-}
-
-div[data-testid="stProgressBar"] > div > div {
-    background: #42e8c5;
-    border-radius: 20px;
-}
-
-div[data-testid="stAlert"] {
-    border-radius: 12px;
 }
 
 div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -246,22 +178,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
     border-radius: 16px;
 }
 
-div[data-testid="stCode"] {
-    border: 1px solid #2a3c55;
-    border-radius: 10px;
-}
-
-hr {
-    border-color: #24334a;
-}
-
-.footer {
-    text-align: center;
-    color: #7f91ad;
-    font-size: 0.83rem;
-    padding: 24px 0 0;
-    line-height: 1.8;
-}
+hr { border-color: #24334a; }
 
 .feature-card {
     background: #121e31;
@@ -297,11 +214,19 @@ div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
     border-radius: 10px;
 }
 
+.footer {
+    text-align: center;
+    color: #7f91ad;
+    font-size: 0.83rem;
+    padding: 24px 0 0;
+    line-height: 1.8;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# Scam warning phrases
+# Warning phrases are grouped by category.
+# Each category contributes at most one point to the base score.
 
 warning_categories = {
     "Urgency or pressure": [
@@ -315,25 +240,25 @@ warning_categories = {
         "verify your account", "password", "verification code",
         "social security", "personal information",
         "confirm your identity", "login details",
-        "security code", "one-time passcode", "one time passcode",
-        "ssn", "bank details"
+        "security code", "one-time passcode",
+        "one time passcode", "ssn", "bank details"
     ],
     "Suspicious links": [
         "click here", "tap here", "click the link",
-        "open this link", "verify here", "bit.ly",
-        "tinyurl.com", "t.co", "free-gift", "claim your reward"
+        "open this link", "verify here"
     ],
     "Money or payment requests": [
         "send money", "wire transfer", "pay now",
-        "payment required", "gift card", "bank account",
+        "payment required", "bank account",
         "processing fee", "transfer funds", "pay a fee",
         "send payment", "outstanding balance",
         "refund", "overdue payment"
     ],
     "Unusual payment methods": [
         "bitcoin", "cryptocurrency", "crypto",
-        "prepaid card", "gift cards", "send the code",
-        "payment through gift cards", "crypto wallet"
+        "prepaid card", "gift card", "gift cards",
+        "send the code", "payment through gift cards",
+        "crypto wallet", "gift card code"
     ],
     "Unexpected prizes or offers": [
         "you won", "winner", "claim your prize",
@@ -345,71 +270,113 @@ warning_categories = {
         "pretending to be", "this is your bank",
         "your account has been compromised",
         "we detected unusual activity", "government agency",
-        "police department", "gift card code",
-        "keep this confidential", "don't tell anyone",
-        "do not tell anyone", "i am stranded",
-        "urgent favor", "send me the code"
+        "police department", "keep this confidential",
+        "don't tell anyone", "do not tell anyone",
+        "i am stranded", "urgent favor"
     ]
 }
 
 category_explanations = {
     "Urgency or pressure":
-        "This message may be trying to rush you into acting before you "
-        "have time to think. That is a common scam tactic.",
+        "This may be trying to rush you into acting before you have "
+        "time to think. That is a common scam tactic.",
 
     "Account or identity concerns":
-        "This mentions an account or personal information. Be careful with "
-        "passwords and verification codes, even if the message looks real.",
+        "This mentions an account or personal information. Be careful "
+        "with passwords and verification codes, even if the message looks real.",
 
     "Suspicious links":
-        "This message contains a link or wording related to links. That "
-        "doesn't automatically make it dangerous, but don't click it to find out.",
+        "This contains wording that encourages you to use a link. "
+        "Check the destination independently before opening it.",
 
     "Money or payment requests":
-        "This mentions money or a payment. Double-check who's asking "
-        "before sending anything.",
+        "This mentions a payment or financial request. Verify who is "
+        "asking and why before sending anything.",
 
     "Unusual payment methods":
-        "Scammers sometimes ask for gift cards or cryptocurrency because "
-        "getting that money back can be difficult.",
+        "Gift cards and cryptocurrency can be difficult to recover "
+        "once sent. Treat requests to pay this way with caution.",
 
     "Unexpected prizes or offers":
-        "This mentions a prize or offer. If you never entered anything "
-        "or have to pay to claim it, that's a warning sign.",
+        "This mentions a prize or offer. Unexpected prizes that require "
+        "upfront payments deserve extra scrutiny.",
 
     "Possible impersonation":
-        "Someone could be pretending to be a person or organization you "
-        "trust. Check with them through a separate contact method."
+        "Someone could be pretending to be a person or organization "
+        "you trust. Verify the request using a separate contact method."
 }
 
 category_advice = {
     "Urgency or pressure":
-        "Take a second. You don't need to panic just because a message "
-        "acts like the world ends in five minutes.",
+        "Take a second. A message trying to rush you doesn't mean "
+        "you have to act immediately.",
 
     "Account or identity concerns":
         "Don't share passwords or verification codes. Visit the official "
         "website yourself or call the number on your bank card.",
 
     "Suspicious links":
-        "Don't click random links. Find the organization's official "
-        "website yourself instead.",
+        "Don't blindly trust links in messages. Find the organization's "
+        "official website yourself.",
 
     "Money or payment requests":
-        "Don't send money until you've checked who's asking and why.",
+        "Verify the person, organization, and reason for the payment first.",
 
     "Unusual payment methods":
         "Pause before paying with gift cards or crypto. Verify the request "
         "through another trusted source.",
 
     "Unexpected prizes or offers":
-        "Don't pay a random fee or give away personal information just "
-        "to claim a prize.",
+        "Don't pay a random fee or share private information just to claim "
+        "a prize.",
 
     "Possible impersonation":
         "Contact the person or organization another way. Don't rely on "
         "contact details in the suspicious message."
 }
+
+known_shorteners = {
+    "bit.ly",
+    "t.co",
+    "tinyurl.com",
+    "is.gd",
+    "ow.ly",
+    "buff.ly",
+    "rebrand.ly",
+    "cutt.ly",
+    "shorturl.at",
+    "rb.gy"
+}
+
+
+def get_urls(message):
+    return re.findall(r"https?://[^\s<>\"']+", message, flags=re.IGNORECASE)
+
+
+def get_hostname(url):
+    cleaned_url = url.rstrip(".,!?;:)]}")
+
+    try:
+        parsed = urlparse(cleaned_url)
+        hostname = parsed.hostname
+
+        if hostname:
+            return hostname.lower().rstrip(".")
+
+    except ValueError:
+        pass
+
+    return None
+
+
+def is_known_shortener(hostname):
+    if not hostname:
+        return False
+
+    return any(
+        hostname == domain or hostname.endswith("." + domain)
+        for domain in known_shorteners
+    )
 
 
 def find_warning_categories(message):
@@ -418,17 +385,13 @@ def find_warning_categories(message):
 
     for category, phrases in warning_categories.items():
         matches = []
-        seen = set()
+        seen_phrases = set()
 
         for phrase in phrases:
-            if phrase in ("bit.ly", "tinyurl.com", "t.co"):
-                pattern = re.escape(phrase)
-            else:
-                pattern = r"(?<!\w)" + re.escape(phrase) + r"(?!\w)"
-
+            pattern = r"(?<!\w)" + re.escape(phrase) + r"(?!\w)"
             match = re.search(pattern, message_lower)
 
-            if match and phrase not in seen:
+            if match and phrase not in seen_phrases:
                 start = max(0, match.start() - 45)
                 end = min(len(message), match.end() + 45)
 
@@ -437,25 +400,30 @@ def find_warning_categories(message):
                     "context": message[start:end].replace("\n", " ")
                 })
 
-                seen.add(phrase)
+                seen_phrases.add(phrase)
 
         if category == "Suspicious links":
-            url_match = re.search(r"https?://\S+", message)
+            for url in get_urls(message):
+                hostname = get_hostname(url)
 
-            if url_match:
-                url = url_match.group().rstrip(".,!?;:)")
-
-                if url.lower() not in seen:
-                    start = max(0, url_match.start() - 45)
-                    end = min(len(message), url_match.end() + 45)
-
+                if is_known_shortener(hostname):
                     matches.append({
-                        "phrase": url,
-                        "context": message[start:end].replace("\n", " ")
+                        "phrase": url.rstrip(".,!?;:)]}"),
+                        "context": url.rstrip(".,!?;:)]}")
                     })
 
         if matches:
-            found_categories[category] = matches
+            unique_matches = []
+            seen = set()
+
+            for item in matches:
+                key = item["phrase"].lower()
+
+                if key not in seen:
+                    unique_matches.append(item)
+                    seen.add(key)
+
+            found_categories[category] = unique_matches
 
     return found_categories
 
@@ -466,52 +434,62 @@ def calculate_risk_score(
     asks_sensitive,
     pressured
 ):
+    # Category points and user-reported concerns both contribute.
+    # Each category is counted only once.
     score = len(found_categories)
 
-    # Context answers add points only when the message has detected
-    # warning signs, so unrelated gibberish doesn't score highly.
-    if found_categories:
-        if expected == "Unexpected":
-            score += 1
+    if expected == "Unexpected":
+        score += 1
 
-        if asks_sensitive == "Yes":
-            score += 2
+    if asks_sensitive == "Yes":
+        score += 2
 
-        if pressured == "Yes":
-            score += 2
+    if pressured == "Yes":
+        score += 2
 
     return min(score, 10)
 
 
 def get_risk_label(score):
     if score <= 2:
-        return "Few warning signs detected"
+        return "Few warning signs reported"
     elif score <= 4:
-        return "Some warning signs detected"
+        return "Some warning signs reported"
     elif score <= 7:
-        return "Several warning signs detected"
-    return "Many warning signs detected"
+        return "Several warning signs reported"
+    return "Many warning signs reported"
 
 
-def get_risk_explanation(score):
+def get_risk_explanation(score, found_categories):
+    if not found_categories:
+        return (
+            "No matching warning phrases were found. Your answers may "
+            "still point to concerns worth checking. The detector can "
+            "miss scams that use different wording."
+        )
+
     if score <= 2:
         return (
-            "We didn't find many warning signs. That doesn't prove the "
-            "message is safe, so check who sent it before trusting it."
+            "We found a small number of warning signs. This doesn't prove "
+            "the message is safe, so check who sent it before trusting it."
         )
-    elif score <= 4:
+
+    if score <= 4:
         return (
-            "There are a few things worth checking. Make sure you know "
-            "who sent the message before clicking anything or sharing info."
+            "There are things worth checking. Verify the sender and "
+            "the request before clicking anything or sharing information."
         )
-    elif score <= 7:
+
+    if score <= 7:
         return (
-            "This message has several warning signs. Be careful and verify "
-            "the sender before doing anything."
+            "Several warning signs or concerning circumstances were reported. "
+            "Be careful and verify the request independently."
         )
+
     return (
-        "This message has many warning signs. Don't send money or share "
-        "private information until you've independently verified the request."
+        "Many warning signs or concerning circumstances were reported. "
+        "Don't send money or share private information until you've "
+        "independently verified the request."
     )
 
 
@@ -525,13 +503,8 @@ def show_analysis(message, expected, asks_sensitive, pressured):
         pressured
     )
 
-    st.markdown('<div class="section-heading">Your results</div>',
-                unsafe_allow_html=True)
-    st.markdown(
-        '<div class="section-subtitle">Here are the warning signs '
-        'we found in your message.</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("### Your results")
+    st.caption("The score combines detected phrases with your answers.")
 
     with st.container(border=True):
         left, right = st.columns([1, 2])
@@ -542,56 +515,46 @@ def show_analysis(message, expected, asks_sensitive, pressured):
 
         with right:
             st.markdown(f"### {get_risk_label(score)}")
-            st.write(get_risk_explanation(score))
+            st.write(get_risk_explanation(score, found_categories))
 
             if score >= 5:
                 st.warning("Pause and verify the message before taking action.")
             elif score >= 3:
                 st.info("Double-check the sender and the request.")
             else:
-                st.success(
-                    "Few warning signs detected. This is not proof "
-                    "that the message is safe."
+                st.info(
+                    "A low score is not proof that a message is safe."
                 )
 
-    if found_categories:
-        st.markdown("### What stood out")
+    st.markdown("### What the message matched")
 
+    if found_categories:
         for category, matches in found_categories.items():
             with st.container(border=True):
                 st.markdown(f"**{category}**")
                 st.write(category_explanations[category])
 
                 for item in matches:
-                    st.caption(f"Matched phrase: {item['phrase']}")
-                    st.code(item["context"], language=None)
+                    st.caption("Matched phrase")
+                    st.text(item["phrase"])
 
                 st.info(category_advice[category])
     else:
-        with st.container(border=True):
-            st.markdown("### No matching warning phrases")
-            st.write(
-                "We didn't find any of the phrases this app checks for. "
-                "That doesn't mean the message is safe. Scams can be worded "
-                "in many different ways, and this detector won't catch every one."
-            )
-
-    if expected == "Unexpected":
-        st.warning(
-            "You weren't expecting this message. Double-check who sent it."
+        st.write(
+            "No phrases from our warning lists matched this message. "
+            "That doesn't prove it is safe."
         )
 
-    if asks_sensitive == "Yes":
-        st.warning(
-            "You indicated that it asks for money or sensitive information. "
-            "Verify the request before sharing anything."
-        )
+    st.markdown("### What you told us")
 
-    if pressured == "Yes":
-        st.warning(
-            "You noticed pressure or threats. Take your time instead of "
-            "letting the message rush you."
-        )
+    answers = [
+        ("Expected message", expected),
+        ("Sensitive information or money requested", asks_sensitive),
+        ("Pressure or threats", pressured)
+    ]
+
+    for question, answer in answers:
+        st.write(f"**{question}:** {answer}")
 
     st.markdown("### What to do next")
 
@@ -606,24 +569,24 @@ def show_analysis(message, expected, asks_sensitive, pressured):
         st.markdown(f"- {item}")
 
     st.caption(
-        "This score is based on simple rules and your answers. It is not "
-        "a percentage chance that the message is a scam."
+        "This is a rule-based score, not a percentage chance that the "
+        "message is a scam. 'Not sure' answers add no points."
     )
 
 
-# Main header
+# Header
 
 st.markdown("""
 <div class="hero">
     <div class="eyebrow">Digital safety, made simpler</div>
     <div class="hero-title">Think twice.<br>Click smarter.</div>
     <div class="hero-description">
-        Got a message that feels a little off? Check it for common scam
-        warning signs before you reply, click, or share anything.
+        For anyone who wants to check a suspicious text, email, or offer.
+        Spot common scam warning signs before replying, clicking, or sharing information.
     </div>
     <span class="pill">Rule-based detection</span>
-    <span class="pill">Privacy-conscious design</span>
-    <span class="pill">Built for real-world awareness</span>
+    <span class="pill">Interactive learning</span>
+    <span class="pill">Practical safety tips</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -634,7 +597,7 @@ tab_check, tab_learn, tab_about = st.tabs([
 ])
 
 
-# Check a message
+# Message checker
 
 with tab_check:
     st.markdown(
@@ -642,17 +605,15 @@ with tab_check:
         unsafe_allow_html=True
     )
     st.markdown(
-        '<div class="section-subtitle">Paste the message below, '
-        'then answer three quick questions for more context.</div>',
+        '<div class="section-subtitle">Paste the message and answer '
+        'three quick questions for more context.</div>',
         unsafe_allow_html=True
     )
 
     with st.container(border=True):
         message = st.text_area(
             "Message to check",
-            placeholder=(
-                "Paste a text message, email, or offer here..."
-            ),
+            placeholder="Paste a text message, email, or offer here...",
             height=180,
             key="message_input"
         )
@@ -705,7 +666,7 @@ with tab_check:
             )
 
 
-# Learn to spot scams
+# Learning quiz
 
 with tab_learn:
     st.markdown(
@@ -713,7 +674,7 @@ with tab_learn:
         unsafe_allow_html=True
     )
     st.markdown(
-        '<div class="section-subtitle">Practice with made-up examples. '
+        '<div class="section-subtitle">Practice with made-up messages. '
         'Some are obvious, and some need a closer look.</div>',
         unsafe_allow_html=True
     )
@@ -726,7 +687,7 @@ with tab_learn:
             ),
             "answer": "Likely scam",
             "explanation": (
-                "It asks for money and tries to get you to use a link. "
+                "It asks for money and encourages you to use a link. "
                 "Check your delivery through the courier's official website."
             )
         },
@@ -737,19 +698,19 @@ with tab_learn:
             ),
             "answer": "Likely scam",
             "explanation": (
-                "An unexpected prize that requires an upfront payment is "
-                "a major warning sign. Verify the contest independently."
+                "An unexpected prize requiring an upfront payment is a "
+                "major warning sign. Verify the contest independently."
             )
         },
         "The account warning": {
             "message": (
                 "We noticed unusual activity on your account. "
-                "Use our official app or website to review your security."
+                "Open our official app to review your security."
             ),
             "answer": "Not enough information",
             "explanation": (
                 "It could be legitimate, but scammers can copy these messages. "
-                "Open the official app or website yourself."
+                "Open the official app yourself instead of trusting a message link."
             )
         },
         "The gift card request": {
@@ -763,15 +724,18 @@ with tab_learn:
                 "Contact the person another way before doing anything."
             )
         },
-        "The library reminder": {
+        "The real library reminder": {
             "message": (
-                "Reminder: your library book is due Friday. "
-                "You can renew it through the library website."
+                "Reminder from Evergreen Valley Public Library: your borrowed "
+                "book is due Friday. You can check your loan details by opening "
+                "the library website you normally use."
             ),
-            "answer": "Not enough information",
+            "answer": "Probably legitimate",
             "explanation": (
-                "There are few obvious warning signs, but that doesn't prove "
-                "it's real. Visit the library's official website yourself."
+                "This message gives a routine reminder without asking for "
+                "payment, passwords, or urgent action. In real life, the text "
+                "alone can't prove who sent it, so check your library account "
+                "through its usual official website if you're unsure."
             )
         }
     }
@@ -816,8 +780,8 @@ with tab_about:
         unsafe_allow_html=True
     )
     st.markdown(
-        '<div class="section-subtitle">The app looks for warning signs '
-        'and explains what you should pay attention to.</div>',
+        '<div class="section-subtitle">A simple way to learn about '
+        'common scam warning signs.</div>',
         unsafe_allow_html=True
     )
 
@@ -830,20 +794,16 @@ with tab_about:
             <div class="feature-title">Phrase detection</div>
             <div class="feature-text">
                 The app checks for phrases linked to urgency, account
-                problems, suspicious links, payments, prizes, and impersonation.
+                problems, links, payments, prizes, and impersonation.
             </div>
         </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        st.markdown("""
+        <br>
         <div class="feature-card">
             <div class="feature-number">03</div>
             <div class="feature-title">Warning score</div>
             <div class="feature-text">
                 Detected categories and your answers contribute to a score
-                out of 10. It is a simple rule-based score, not a probability.
+                out of 10. This is a simple rule-based score, not a probability.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -855,38 +815,50 @@ with tab_about:
             <div class="feature-title">Context matters</div>
             <div class="feature-text">
                 Your answers about unexpected messages, sensitive requests,
-                and pressure help add context to the analysis.
+                and pressure add context to the results.
             </div>
         </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        st.markdown("""
+        <br>
         <div class="feature-card">
             <div class="feature-number">04</div>
             <div class="feature-title">Practical advice</div>
             <div class="feature-text">
-                Instead of just showing a number, the app highlights matched
-                phrases and suggests safer next steps.
+                The app shows matched phrases and suggests safer next steps
+                instead of giving you a number with no explanation.
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("### Who is this for?")
+
+    st.write(
+        "Scam Detector is designed for everyday users, including teens, "
+        "families, and older adults who want help recognizing common scam "
+        "warning signs in messages."
+    )
 
     st.markdown("### What it can't do")
 
     st.write(
         "This is a rule-based prototype, not an AI scam detector. It can't "
         "confirm who sent a message, verify a website, or catch every scam. "
-        "It can also flag harmless messages that happen to contain certain phrases."
+        "It may also flag harmless messages that contain certain phrases."
     )
 
     st.markdown("### Privacy")
 
     st.write(
-        "This code does not intentionally save your message to a database "
-        "or send it to an AI service. The hosting platform may have its own "
+        "This code does not intentionally save messages to a database or "
+        "send them to an AI service. The hosting platform may have its own "
         "logging policies, so don't enter sensitive personal information."
+    )
+
+    st.markdown("### A note about the score")
+
+    st.write(
+        "The score combines detected warning categories with the answers "
+        "provided by the user. 'Not sure' answers add no points. The score "
+        "is not a probability that the message is a scam."
     )
 
 
