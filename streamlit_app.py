@@ -38,9 +38,8 @@ warning_categories = {
     ],
     "Suspicious links": [
         "click here", "tap here", "click the link",
-        "open this link", "verify here", "http://",
-        "https://", "bit.ly", "tinyurl.com", "t.co",
-        "free-gift", "claim your reward"
+        "open this link", "verify here", "bit.ly",
+        "tinyurl.com", "t.co", "free-gift", "claim your reward"
     ],
     "Money or payment requests": [
         "send money", "wire transfer", "pay now",
@@ -86,7 +85,7 @@ category_explanations = {
 
     "Money or payment requests":
         "This mentions money or some kind of payment. Double-check who's "
-        "asking before sending anything. Losing money over a fake message is not it.",
+        "asking before sending anything.",
 
     "Unusual payment methods":
         "Scammers sometimes ask for gift cards or crypto because getting "
@@ -139,9 +138,14 @@ def find_warning_categories(message):
         matches = []
 
         for phrase in phrases:
-            pattern = r"(?<!\w)" + re.escape(phrase) + r"(?!\w)"
+            if phrase in ("bit.ly", "tinyurl.com", "t.co"):
+                pattern = re.escape(phrase)
+            else:
+                pattern = r"(?<!\w)" + re.escape(phrase) + r"(?!\w)"
 
-            for match in re.finditer(pattern, message_lower):
+            match = re.search(pattern, message_lower)
+
+            if match:
                 start = max(0, match.start() - 45)
                 end = min(len(message), match.end() + 45)
 
@@ -150,10 +154,28 @@ def find_warning_categories(message):
                     "context": message[start:end].replace("\n", " ")
                 })
 
-                break
+        if re.search(r"https?://\S+", message_lower):
+            if category == "Suspicious links":
+                url_match = re.search(r"https?://\S+", message)
+                if url_match:
+                    matches.append({
+                        "phrase": url_match.group(),
+                        "context": message[
+                            max(0, url_match.start() - 45):
+                            min(len(message), url_match.end() + 45)
+                        ].replace("\n", " ")
+                    })
 
         if matches:
-            found_categories[category] = matches
+            unique_matches = []
+            seen = set()
+
+            for item in matches:
+                if item["phrase"].lower() not in seen:
+                    unique_matches.append(item)
+                    seen.add(item["phrase"].lower())
+
+            found_categories[category] = unique_matches
 
     return found_categories
 
@@ -203,7 +225,7 @@ def get_risk_explanation(score):
     elif score <= 7:
         return (
             "This message has quite a few warning signs. I'd be careful "
-            "and definitely check who's behind it before doing anything."
+            "and check who's behind it before doing anything."
         )
     return (
         "This message has a lot of warning signs. Don't send money or "
@@ -377,8 +399,8 @@ with tab_learn:
             "answer": "Likely scam",
             "explanation": (
                 "A random prize that requires you to pay first is a major "
-                "warning sign. Don't pay until you've independently checked "
-                "whether the contest is real."
+                "warning sign. Don't pay until you've checked whether the "
+                "contest is real."
             )
         },
         "The account warning": {
@@ -456,22 +478,22 @@ with tab_about:
 
     st.markdown(
         """
-        1. It looks for suspicious phrases
+        **1. It looks for suspicious phrases**
 
         The app checks your message for phrases linked to urgency, account
         problems, links, payments, unexpected prizes, and possible scams.
 
-        2. Your answers matter too
+        **2. Your answers matter too**
 
         It also looks at whether you expected the message, whether it asks
         for sensitive information, and whether it's trying to rush you.
 
-        3. It gives you a warning score
+        **3. It gives you a warning score**
 
         The app combines the categories it finds with your answers. The score
         goes up to 10, but it's not a real percentage chance of getting scammed.
 
-        4. It explains what it found
+        **4. It explains what it found**
 
         Instead of just throwing a number at you and calling it a day, the
         app shows the phrases it picked up and gives you advice on what to do.
@@ -503,4 +525,3 @@ st.caption(
     "Made to help people spot scam warning signs. Not every suspicious "
     "message is a scam, and not every scam looks suspicious."
 )
-```
