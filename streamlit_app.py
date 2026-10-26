@@ -593,13 +593,13 @@ def show_analysis(message, expected, asks_sensitive, pressured):
 
 st.markdown("""
 <div class="hero">
-    <div class="eyebrow">Digital safety, without the guesswork</div>
-    <div class="hero-title">Think twice.<br>Click smarter.</div>
+    <div class="eyebrow">Still digital safety, just simplified!</div>
+    <div class="hero-title">ScamSense.<br>Catch it before it catches you.</div>
     <div class="hero-description">
-        Got a message that feels a little off? Paste it here and let's
-        look at it. Scam Detector checks for common warning signs and
+        Got a message that feels a little off? Paste it and let's
+        look at it. ScamSense checks for common warning signs and
         helps you figure out what to look out for before you click,
-        reply, or share anything.
+        reply, or share anything on the net.
     </div>
     <span class="pill">Checks common warning signs</span>
     <span class="pill">Explains what it finds</span>
