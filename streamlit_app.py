@@ -188,13 +188,13 @@ def calculate_risk_score(
 ):
     score = len(found_categories)
 
-    if expected == "Unexpected":
+    if expected == "Unexpected" and found_categories:
         score += 1
 
-    if asks_sensitive == "Yes":
+    if asks_sensitive == "Yes" and found_categories:
         score += 2
 
-    if pressured == "Yes":
+    if pressured == "Yes" and found_categories:
         score += 2
 
     return min(score, 10)
