@@ -1,5 +1,5 @@
+
 import re
-from urllib.parse import urlparse
 
 import streamlit as st
 
@@ -340,49 +340,6 @@ category_advice = {
         "the phone number or link in the message you're checking."
 }
 
-known_shorteners = {
-    "bit.ly",
-    "t.co",
-    "tinyurl.com",
-    "is.gd",
-    "ow.ly",
-    "buff.ly",
-    "rebrand.ly",
-    "cutt.ly",
-    "shorturl.at",
-    "rb.gy"
-}
-
-
-def get_urls(message):
-    return re.findall(r"https?://[^\s<>\"']+", message, flags=re.IGNORECASE)
-
-
-def get_hostname(url):
-    cleaned_url = url.rstrip(".,!?;:)]}")
-
-    try:
-        parsed = urlparse(cleaned_url)
-        hostname = parsed.hostname
-
-        if hostname:
-            return hostname.lower().rstrip(".")
-
-    except ValueError:
-        pass
-
-    return None
-
-
-def is_known_shortener(hostname):
-    if not hostname:
-        return False
-
-    return any(
-        hostname == domain or hostname.endswith("." + domain)
-        for domain in known_shorteners
-    )
-
 
 def find_warning_categories(message):
     found_categories = {}
@@ -406,16 +363,6 @@ def find_warning_categories(message):
                 })
 
                 seen_phrases.add(phrase)
-
-        if category == "Suspicious links":
-            for url in get_urls(message):
-                hostname = get_hostname(url)
-
-                if is_known_shortener(hostname):
-                    matches.append({
-                        "phrase": url.rstrip(".,!?;:)]}"),
-                        "context": url.rstrip(".,!?;:)]}")
-                    })
 
         if matches:
             unique_matches = []
@@ -871,11 +818,11 @@ with tab_about:
 
     st.write(
         "This is a rule-based prototype, not an AI scam detector. It looks "
-        "for specific phrases and known shortened-link domains, so it can "
-        "miss scams that use different wording. It can also flag a perfectly "
-        "harmless message just because it contains a suspicious-sounding "
-        "phrase. It can't confirm who sent a message or prove that a website "
-        "is safe. Use the result as a starting point, not a final verdict."
+        "for specific phrases, so it can miss scams that use different "
+        "wording. It can also flag a perfectly harmless message just because "
+        "it contains a suspicious-sounding phrase. It can't confirm who sent "
+        "a message or prove that a website is safe. Use the result as a "
+        "starting point, not a final verdict."
     )
 
     st.markdown("### What about privacy?")
